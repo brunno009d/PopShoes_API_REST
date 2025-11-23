@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.backend.model.Usuario;
 import com.example.backend.service.UsuarioService;
 
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/usuarios")
