@@ -13,15 +13,18 @@ public class WebConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                // CAMBIO IMPORTANTE: Usa "/**" en lugar de "/*" para cubrir todas las subrutas
                 registry.addMapping("/**")
-                        // Define quién tiene permiso de entrar (Tu React)
-                        .allowedOrigins("http://localhost:5173", "http://127.0.0.1:5173")
-                        // Define qué acciones pueden hacer
+                        .allowedOrigins(
+                                // Tus entornos locales
+                                "http://localhost:5173",
+                                "http://127.0.0.1:5173",
+                                
+                                // Tu entorno de producción (Vercel)
+                                // NOTA: He corregido '.verce.app' a '.vercel.app'
+                                "https://pop-shoes-front-react.vercel.app"
+                        )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-                        // Permitir todos los encabezados (Tokens, etc.)
                         .allowedHeaders("*")
-                        // Permitir credenciales (necesario para algunos navegadores/auth)
                         .allowCredentials(true);
             }
         };
