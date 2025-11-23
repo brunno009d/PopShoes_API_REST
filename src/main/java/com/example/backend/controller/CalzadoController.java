@@ -16,8 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.backend.model.Calzado;
 import com.example.backend.service.CalzadoService;
-
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/calzados")
