@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
+@SuppressWarnings("null")
 public class UsuarioService {
 
     @Autowired
@@ -22,13 +23,13 @@ public class UsuarioService {
     private PasswordEncoder passwordEncoder;
 
     public List<Usuario> findAll() {
-        return usuarioRepository.findAll();
+        List<Usuario> usuarios = usuarioRepository.findAll();
+        return usuarios;
     }
 
     public Usuario findById(Integer id) {
         Usuario usuario = usuarioRepository.findById(id).orElse(null);
         if (usuario != null){
-            // Por seguridad, limpiamos la contraseña al devolver el usuario
             usuario.setContrasena(null);
         }
         return usuario;
@@ -42,6 +43,7 @@ public class UsuarioService {
         } else {
             return null;
         }
+
     }
 
     public Usuario registro(Usuario usuario) {
@@ -53,27 +55,20 @@ public class UsuarioService {
             throw new IllegalArgumentException("El nombre de usuario ya está en uso.");
         }
 
-        return save(usuario);
+        String passwordHasheada = passwordEncoder.encode(usuario.getContrasena());
+        usuario.setContrasena(passwordHasheada);
+
+        Usuario nuevoUsuario = usuarioRepository.save(usuario);
+
+        // Para seguridad, no devolver la contraseña hasheada
+        nuevoUsuario.setContrasena(null);
+
+        return nuevoUsuario;
     }
 
     public Usuario save(Usuario usuario) {
-        if (usuario.getContrasena() == null || usuario.getContrasena().isEmpty()) {
-            
-            if (usuario.getId() == null) {
-                usuario.setContrasena(passwordEncoder.encode("123456")); 
-            } 
-            else {
-                // Buscamos la contraseña antigua en la base de datos para no perderla
-                Usuario oldUser = usuarioRepository.findById(usuario.getId()).orElse(null);
-                if (oldUser != null) {
-                    usuario.setContrasena(oldUser.getContrasena());
-                }
-            }
-        } else {
-            String passwordHasheada = passwordEncoder.encode(usuario.getContrasena());
-            usuario.setContrasena(passwordHasheada);
-        }
-
+        String passwordHasheada = passwordEncoder.encode(usuario.getContrasena());
+        usuario.setContrasena(passwordHasheada);
         return usuarioRepository.save(usuario);
     }
 
@@ -84,21 +79,34 @@ public class UsuarioService {
     public Usuario partialUpdate(Usuario usuario) {
         Usuario existingUsuario = usuarioRepository.findById(usuario.getId()).orElse(null);
         if (existingUsuario != null) {
-            if (usuario.getRun() != null) existingUsuario.setRun(usuario.getRun());
-            if (usuario.getNombre() != null) existingUsuario.setNombre(usuario.getNombre());
-            if (usuario.getCorreo() != null) existingUsuario.setCorreo(usuario.getCorreo());
-            
-            // Solo encriptamos si realmente viene una nueva contraseña
-            if (usuario.getContrasena() != null && !usuario.getContrasena().isEmpty()) {
+            if (usuario.getRun() != null) {
+                existingUsuario.setRun(usuario.getRun());
+            }
+            if (usuario.getNombre() != null) {
+                existingUsuario.setNombre(usuario.getNombre());
+            }
+            if (usuario.getCorreo() != null) {
+                existingUsuario.setCorreo(usuario.getCorreo());
+            }
+            if (usuario.getContrasena() != null) {
                 String passwordHasheada = passwordEncoder.encode(usuario.getContrasena());
                 existingUsuario.setContrasena(passwordHasheada);
             }
-            
-            if (usuario.getApaterno() != null) existingUsuario.setApaterno(usuario.getApaterno());
-            if (usuario.getAmaterno() != null) existingUsuario.setAmaterno(usuario.getAmaterno());
-            if (usuario.getFechaNacimiento() != null) existingUsuario.setFechaNacimiento(usuario.getFechaNacimiento());
-            if (usuario.getFechaCreacion() != null) existingUsuario.setFechaCreacion(usuario.getFechaCreacion());
-            if (usuario.getRol() != null) existingUsuario.setRol(usuario.getRol());
+            if (usuario.getApaterno() != null) {
+                existingUsuario.setApaterno(usuario.getApaterno());
+            }
+            if (usuario.getAmaterno() != null) {
+                existingUsuario.setAmaterno(usuario.getAmaterno());
+            }
+            if (usuario.getFechaNacimiento() != null) {
+                existingUsuario.setFechaNacimiento(usuario.getFechaNacimiento());
+            }
+            if (usuario.getFechaCreacion() != null) {
+                existingUsuario.setFechaCreacion(usuario.getFechaCreacion());
+            }
+            if (usuario.getRol() != null) {
+                existingUsuario.setRol(usuario.getRol());
+            }
 
             return usuarioRepository.save(existingUsuario);
         } else {
@@ -106,7 +114,9 @@ public class UsuarioService {
         }
     }
 
+    //revision
     public void deleteUsuario(Integer id) {
         usuarioRepository.deleteById(id);
-    }   
+    }  
+
 }
