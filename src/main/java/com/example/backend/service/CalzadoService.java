@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 
 import com.example.backend.core.AbstractBaseService;
 import com.example.backend.model.Calzado;
+import com.example.backend.model.Imagen; // Importante
 import com.example.backend.repository.CalzadoRepository;
+import com.example.backend.repository.ImagenRepository; // Importante
 
 import jakarta.transaction.Transactional;
 
@@ -16,6 +18,32 @@ import jakarta.transaction.Transactional;
 public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
 
     private final CalzadoRepository calzadoRepository;
+    private final ImagenRepository imagenRepository; 
+
+    public CalzadoService(CalzadoRepository calzadoRepository, ImagenRepository imagenRepository) {
+        super(calzadoRepository);
+        this.calzadoRepository = calzadoRepository;
+        this.imagenRepository = imagenRepository;
+    }
+
+    // CAMBIO: Le cambiamos el nombre a 'crear' para evitar conflictos con el padre
+    public Calzado crear(Calzado calzado) {
+        // 1. Guardamos el Calzado
+        Calzado calzadoGuardado = calzadoRepository.save(calzado);
+
+        // 2. Lógica de Imagen (Truco de transporte)
+        if (calzado.getUrlImagenInput() != null && !calzado.getUrlImagenInput().isEmpty()) {
+            Imagen nuevaImagen = new Imagen();
+            nuevaImagen.setTitulo("Principal - " + calzadoGuardado.getNombre());
+            nuevaImagen.setUrl(calzado.getUrlImagenInput());
+            nuevaImagen.setCalzado(calzadoGuardado); 
+            imagenRepository.save(nuevaImagen);
+        }
+
+        return calzadoGuardado;
+    }
+
+    // --- El resto de tu lógica se mantiene igual ---
 
     public Calzado partialUpdate(Calzado calzado) {
         if (calzado == null || calzado.getId() == null) {
@@ -42,12 +70,9 @@ public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
         if (calzado.getGenero() != null) {
             existente.setGenero(calzado.getGenero());
         }
+        // Nota: Si quieres actualizar imagen en partialUpdate, deberías agregar la lógica aquí también
+        
         return calzadoRepository.save(existente);
-    }
-
-    public CalzadoService(CalzadoRepository calzadoRepository) {
-        super(calzadoRepository);
-        this.calzadoRepository = calzadoRepository;
     }
 
     public List<Calzado> buscarPorNombre(String nombre) {
@@ -90,8 +115,6 @@ public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
         return calzadoRepository.findByTallasId(tallaId);
     }
 
-
-
     public boolean tieneStock(Integer id, int cantidad) {
         return calzadoRepository.findById(id)
         .map(c -> c.getStock() != null && c.getStock() >= cantidad)
@@ -121,8 +144,4 @@ public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
         existente.setStock(nuevoStock);
         return calzadoRepository.save(existente);
     }
-
-
-
-
 }
