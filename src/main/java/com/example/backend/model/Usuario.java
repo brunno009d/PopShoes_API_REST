@@ -46,6 +46,9 @@ public class Usuario {
     @Column(name = "a_materno", nullable = false, length = 100)
     private String amaterno;
 
+    @Column(name = "direccion", length = 255)
+    private String direccion;
+
     @Column(name = "fecha_nacimiento", nullable = false)
     private Date fechaNacimiento;
 

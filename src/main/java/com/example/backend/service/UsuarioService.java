@@ -23,8 +23,7 @@ public class UsuarioService {
     private PasswordEncoder passwordEncoder;
 
     public List<Usuario> findAll() {
-        List<Usuario> usuarios = usuarioRepository.findAll();
-        return usuarios;
+        return usuarioRepository.findAll();
     }
 
     public Usuario findById(Integer id) {
@@ -43,7 +42,6 @@ public class UsuarioService {
         } else {
             return null;
         }
-
     }
 
     public Usuario registro(Usuario usuario) {
@@ -59,16 +57,17 @@ public class UsuarioService {
         usuario.setContrasena(passwordHasheada);
 
         Usuario nuevoUsuario = usuarioRepository.save(usuario);
-
-        // Para seguridad, no devolver la contraseña hasheada
         nuevoUsuario.setContrasena(null);
 
         return nuevoUsuario;
     }
 
     public Usuario save(Usuario usuario) {
-        String passwordHasheada = passwordEncoder.encode(usuario.getContrasena());
-        usuario.setContrasena(passwordHasheada);
+        // Si viene contraseña, la hasheamos antes de guardar
+        if (usuario.getContrasena() != null && !usuario.getContrasena().isEmpty()) {
+            String passwordHasheada = passwordEncoder.encode(usuario.getContrasena());
+            usuario.setContrasena(passwordHasheada);
+        }
         return usuarioRepository.save(usuario);
     }
 
@@ -76,9 +75,17 @@ public class UsuarioService {
         return save(usuario);
     }
 
+    // --- METODO CLAVE PARA GUARDAR LA DIRECCIÓN ---
     public Usuario partialUpdate(Usuario usuario) {
         Usuario existingUsuario = usuarioRepository.findById(usuario.getId()).orElse(null);
         if (existingUsuario != null) {
+            
+            // 1. NUEVO: Guardar Dirección si viene en la petición
+            if (usuario.getDireccion() != null) {
+                existingUsuario.setDireccion(usuario.getDireccion());
+            }
+
+            // 2. Campos originales (Se mantienen para no romper nada)
             if (usuario.getRun() != null) {
                 existingUsuario.setRun(usuario.getRun());
             }
@@ -88,10 +95,13 @@ public class UsuarioService {
             if (usuario.getCorreo() != null) {
                 existingUsuario.setCorreo(usuario.getCorreo());
             }
-            if (usuario.getContrasena() != null) {
+            
+            // Contraseña: Solo actualizar si viene una nueva y no está vacía
+            if (usuario.getContrasena() != null && !usuario.getContrasena().isEmpty()) {
                 String passwordHasheada = passwordEncoder.encode(usuario.getContrasena());
                 existingUsuario.setContrasena(passwordHasheada);
             }
+            
             if (usuario.getApaterno() != null) {
                 existingUsuario.setApaterno(usuario.getApaterno());
             }
@@ -114,9 +124,7 @@ public class UsuarioService {
         }
     }
 
-    //revision
     public void deleteUsuario(Integer id) {
         usuarioRepository.deleteById(id);
     }  
-
 }
