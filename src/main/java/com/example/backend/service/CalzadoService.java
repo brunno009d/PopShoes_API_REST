@@ -53,6 +53,7 @@ public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
 
         if (calzado.getNombre() != null) existente.setNombre(calzado.getNombre());
         if (calzado.getPrecio() != null) existente.setPrecio(calzado.getPrecio());
+        if (calzado.getDescripcion() != null) existente.setDescripcion(calzado.getDescripcion());
         if (calzado.getStock() != null) existente.setStock(calzado.getStock());
         if (calzado.getMarca() != null) existente.setMarca(calzado.getMarca());
         if (calzado.getGenero() != null) existente.setGenero(calzado.getGenero());
