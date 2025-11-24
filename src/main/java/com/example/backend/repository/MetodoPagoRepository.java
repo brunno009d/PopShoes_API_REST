@@ -5,8 +5,8 @@ import org.springframework.stereotype.Repository;
 
 import com.example.backend.model.MetodoPago;
 
-
 @Repository
-public interface MetodoPagoRepository extends JpaRepository<MetodoPago, Integer>{
-    
+public interface MetodoPagoRepository extends JpaRepository<MetodoPago, Integer> {
+
+    MetodoPago findByNombre(String nombre);
 }

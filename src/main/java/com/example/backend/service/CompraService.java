@@ -2,75 +2,87 @@ package com.example.backend.service;
 
 import java.util.Date;
 import java.util.List;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.example.backend.core.AbstractBaseService;
-import com.example.backend.model.Calzado;
 import com.example.backend.model.Compra;
 import com.example.backend.model.DetalleCompra;
+import com.example.backend.model.MetodoEnvio;
+import com.example.backend.model.MetodoPago;
 import com.example.backend.repository.CompraRepository;
+import com.example.backend.repository.MetodoEnvioRepository;
+import com.example.backend.repository.MetodoPagoRepository;
 
 import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
-public class CompraService extends AbstractBaseService<Compra, Integer> {
+public class CompraService {
 
-    private final CompraRepository compraRepository;
-    private final DetalleCompraService detalleCompraService;
-    private final CalzadoService calzadoService;
+    @Autowired
+    private CompraRepository compraRepository;
+    
+    @Autowired
+    private MetodoEnvioRepository metodoEnvioRepository;
+    
+    @Autowired
+    private MetodoPagoRepository metodoPagoRepository;
 
-    public CompraService(
-        CompraRepository compraRepository,
-        DetalleCompraService detalleCompraService,
-        CalzadoService calzadoService
-    ) {
-        super(compraRepository);
-        this.compraRepository = compraRepository;
-        this.detalleCompraService = detalleCompraService;
-        this.calzadoService = calzadoService;
+    public List<Compra> obtenerTodos() {
+        return compraRepository.findAll();
     }
 
-    public Compra crearCompraConDetalles(Compra compra, List<DetalleCompra> detalles) {
+    public Compra obtenerPorId(Integer id) {
+        return compraRepository.findById(id).orElse(null);
+    }
 
+
+    public Compra crear(Compra compra) {
         compra.setFecha(new Date());
-        compra.setTotal(0L); 
-        Compra compraGuardada = compraRepository.save(compra);
-        long total = 0;
-
-        for (DetalleCompra detalle : detalles) {
-
-            detalle.setCompra(compraGuardada);
-
-            Calzado calzado = calzadoService.obtenerPorId(detalle.getCalzado().getId());
-            if (calzado == null) {
-                throw new IllegalArgumentException("El calzado con ID " + detalle.getCalzado().getId() + " no existe.");
-            }
-
-            int cantidad = detalle.getCantidad();
-            if (!calzadoService.tieneStock(calzado.getId(), cantidad)) {
-                throw new IllegalArgumentException("Stock insuficiente para el calzado: " + calzado.getNombre());
-            }
-
-            calzadoService.reducirStock(calzado.getId(), cantidad);
-
-            detalleCompraService.crear(detalle);
-
-            long precio = calzado.getPrecio() != null ? calzado.getPrecio() : 0;
-            total += (precio * cantidad);
+        if (compra.getEstado() == null) {
+            compra.setEstado("Pendiente"); 
         }
 
-        compraGuardada.setTotal(total);
-        return compraRepository.save(compraGuardada);
-    }
+        if (compra.getEnvioNombre() != null) {
+            MetodoEnvio envio = metodoEnvioRepository.findByNombre(compra.getEnvioNombre());
+            if (envio != null) {
+                compra.setMetodoEnvio(envio);
+            }
+        }
+        
+        if (compra.getPagoNombre() != null) {
+            MetodoPago pago = metodoPagoRepository.findByNombre(compra.getPagoNombre());
+            if (pago != null) {
+                compra.setMetodoPago(pago);
+            }
+        }
 
-    public Compra actualizarEstadoCompra(Integer id, Boolean nuevoEstado) {
-        Compra compra = obtenerPorId(id);
-        if (compra == null) return null;
 
-        compra.setEstado(nuevoEstado);
+        if (compra.getDetalles() != null) {
+            for (DetalleCompra detalle : compra.getDetalles()) {
+                detalle.setCompra(compra); 
+            }
+        }
         return compraRepository.save(compra);
     }
-}
 
+    public Compra actualizar(Integer id, Compra compra) {
+        return compraRepository.save(compra);
+    }
+    
+    public Compra actualizarEstadoCompra(Integer id, Boolean entregado) {
+        Compra c = obtenerPorId(id);
+        if (c != null) {
+            c.setEstado(entregado ? "Entregado" : "Pendiente");
+            return compraRepository.save(c);
+        }
+        return null;
+    }
+
+    public boolean eliminar(Integer id) {
+        if (compraRepository.existsById(id)) {
+            compraRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+}
