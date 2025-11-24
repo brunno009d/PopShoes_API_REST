@@ -29,14 +29,16 @@ public class CompraController {
     @GetMapping
     public ResponseEntity<List<Compra>> obtenerTodos() {
         List<Compra> list = compraService.obtenerTodos();
-        if (list.isEmpty()) return ResponseEntity.noContent().build();
+        if (list.isEmpty())
+            return ResponseEntity.noContent().build();
         return ResponseEntity.ok(list);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Compra> obtenerPorId(@PathVariable Integer id) {
         Compra c = compraService.obtenerPorId(id);
-        if (c == null) return ResponseEntity.notFound().build();
+        if (c == null)
+            return ResponseEntity.notFound().build();
         return ResponseEntity.ok(c);
     }
 
@@ -46,36 +48,43 @@ public class CompraController {
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
-    //@PostMapping("/con-detalles")
-    //public ResponseEntity<Compra> crearConDetalles(@RequestBody CompraConDetalleRequest request) {
-    //    Compra compra = compraService.crearCompraConDetalles(request.getCompra(), request.getDetalles());
-    //    return ResponseEntity.status(HttpStatus.CREATED).body(compra);
-    //}
+    // @PostMapping("/con-detalles")
+    // public ResponseEntity<Compra> crearConDetalles(@RequestBody
+    // CompraConDetalleRequest request) {
+    // Compra compra = compraService.crearCompraConDetalles(request.getCompra(),
+    // request.getDetalles());
+    // return ResponseEntity.status(HttpStatus.CREATED).body(compra);
+    // }
 
     @PutMapping("/{id}")
     public ResponseEntity<Compra> actualizar(@PathVariable Integer id, @RequestBody Compra compra) {
         Compra existente = compraService.obtenerPorId(id);
-        if (existente == null) return ResponseEntity.notFound().build();
+        if (existente == null)
+            return ResponseEntity.notFound().build();
         Compra guardado = compraService.actualizar(id, compra);
         return ResponseEntity.ok(guardado);
     }
 
     @PatchMapping("/{id}/estado")
     public ResponseEntity<Compra> actualizarEstado(
-        @PathVariable Integer id,
-        @RequestBody Map<String, Boolean> body
+            @PathVariable Integer id,
+            @RequestBody Map<String, String> body 
     ) {
-        Compra c = compraService.actualizarEstadoCompra(id, body.get("estado"));
-        if (c == null) return ResponseEntity.notFound().build();
+        String nuevoEstado = body.get("estado");
+        Compra c = compraService.actualizarEstadoCompra(id, nuevoEstado);
+        if (c == null)
+            return ResponseEntity.notFound().build();
         return ResponseEntity.ok(c);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         Compra existente = compraService.obtenerPorId(id);
-        if (existente == null) return ResponseEntity.notFound().build();
+        if (existente == null)
+            return ResponseEntity.notFound().build();
         boolean ok = compraService.eliminar(id);
-        if (ok) return ResponseEntity.noContent().build();
+        if (ok)
+            return ResponseEntity.noContent().build();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 }

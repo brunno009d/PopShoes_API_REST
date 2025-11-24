@@ -20,10 +20,10 @@ public class CompraService {
 
     @Autowired
     private CompraRepository compraRepository;
-    
+
     @Autowired
     private MetodoEnvioRepository metodoEnvioRepository;
-    
+
     @Autowired
     private MetodoPagoRepository metodoPagoRepository;
 
@@ -35,11 +35,10 @@ public class CompraService {
         return compraRepository.findById(id).orElse(null);
     }
 
-
     public Compra crear(Compra compra) {
         compra.setFecha(new Date());
         if (compra.getEstado() == null) {
-            compra.setEstado("Pendiente"); 
+            compra.setEstado("Pendiente");
         }
 
         if (compra.getEnvioNombre() != null) {
@@ -48,7 +47,7 @@ public class CompraService {
                 compra.setMetodoEnvio(envio);
             }
         }
-        
+
         if (compra.getPagoNombre() != null) {
             MetodoPago pago = metodoPagoRepository.findByNombre(compra.getPagoNombre());
             if (pago != null) {
@@ -56,10 +55,9 @@ public class CompraService {
             }
         }
 
-
         if (compra.getDetalles() != null) {
             for (DetalleCompra detalle : compra.getDetalles()) {
-                detalle.setCompra(compra); 
+                detalle.setCompra(compra);
             }
         }
         return compraRepository.save(compra);
@@ -68,11 +66,11 @@ public class CompraService {
     public Compra actualizar(Integer id, Compra compra) {
         return compraRepository.save(compra);
     }
-    
-    public Compra actualizarEstadoCompra(Integer id, Boolean entregado) {
+
+    public Compra actualizarEstadoCompra(Integer id, String nuevoEstado) {
         Compra c = obtenerPorId(id);
         if (c != null) {
-            c.setEstado(entregado ? "Entregado" : "Pendiente");
+            c.setEstado(nuevoEstado); 
             return compraRepository.save(c);
         }
         return null;
