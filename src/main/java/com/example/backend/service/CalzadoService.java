@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 
 import com.example.backend.core.AbstractBaseService;
 import com.example.backend.model.Calzado;
-import com.example.backend.model.Imagen; // Importante
+import com.example.backend.model.Imagen; 
 import com.example.backend.repository.CalzadoRepository;
-import com.example.backend.repository.ImagenRepository; // Importante
+import com.example.backend.repository.ImagenRepository; 
 
 import jakarta.transaction.Transactional;
 
@@ -18,7 +18,7 @@ import jakarta.transaction.Transactional;
 public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
 
     private final CalzadoRepository calzadoRepository;
-    private final ImagenRepository imagenRepository; 
+    private final ImagenRepository imagenRepository;
 
     public CalzadoService(CalzadoRepository calzadoRepository, ImagenRepository imagenRepository) {
         super(calzadoRepository);
@@ -26,12 +26,10 @@ public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
         this.imagenRepository = imagenRepository;
     }
 
-    // CAMBIO: Le cambiamos el nombre a 'crear' para evitar conflictos con el padre
+    // --- CREAR (POST) ---
     public Calzado crear(Calzado calzado) {
-        // 1. Guardamos el Calzado
         Calzado calzadoGuardado = calzadoRepository.save(calzado);
 
-        // 2. Lógica de Imagen (Truco de transporte)
         if (calzado.getUrlImagenInput() != null && !calzado.getUrlImagenInput().isEmpty()) {
             Imagen nuevaImagen = new Imagen();
             nuevaImagen.setTitulo("Principal - " + calzadoGuardado.getNombre());
@@ -39,12 +37,10 @@ public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
             nuevaImagen.setCalzado(calzadoGuardado); 
             imagenRepository.save(nuevaImagen);
         }
-
         return calzadoGuardado;
     }
 
-    // --- El resto de tu lógica se mantiene igual ---
-
+    // --- ACTUALIZAR PARCIAL (PATCH) ---
     public Calzado partialUpdate(Calzado calzado) {
         if (calzado == null || calzado.getId() == null) {
             return null;
@@ -55,25 +51,34 @@ public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
             return null;
         }
 
-        if (calzado.getNombre() != null) {
-            existente.setNombre(calzado.getNombre());
+        if (calzado.getNombre() != null) existente.setNombre(calzado.getNombre());
+        if (calzado.getPrecio() != null) existente.setPrecio(calzado.getPrecio());
+        if (calzado.getStock() != null) existente.setStock(calzado.getStock());
+        if (calzado.getMarca() != null) existente.setMarca(calzado.getMarca());
+        if (calzado.getGenero() != null) existente.setGenero(calzado.getGenero());
+        
+  
+        if (calzado.getUrlImagenInput() != null && !calzado.getUrlImagenInput().isEmpty()) {
+            
+
+            List<Imagen> imagenes = existente.getImagenes();
+            
+            if (imagenes != null && !imagenes.isEmpty()) {
+                Imagen imgPrincipal = imagenes.get(0);
+                imgPrincipal.setUrl(calzado.getUrlImagenInput());
+                imagenRepository.save(imgPrincipal);
+            } else {
+                Imagen nuevaImagen = new Imagen();
+                nuevaImagen.setTitulo("Principal - " + existente.getNombre());
+                nuevaImagen.setUrl(calzado.getUrlImagenInput());
+                nuevaImagen.setCalzado(existente);
+                imagenRepository.save(nuevaImagen);
+            }
         }
-        if (calzado.getPrecio() != null) {
-            existente.setPrecio(calzado.getPrecio());
-        }
-        if (calzado.getStock() != null) {
-            existente.setStock(calzado.getStock());
-        }
-        if (calzado.getMarca() != null) {
-            existente.setMarca(calzado.getMarca());
-        }
-        if (calzado.getGenero() != null) {
-            existente.setGenero(calzado.getGenero());
-        }
-        // Nota: Si quieres actualizar imagen en partialUpdate, deberías agregar la lógica aquí también
         
         return calzadoRepository.save(existente);
     }
+
 
     public List<Calzado> buscarPorNombre(String nombre) {
         return calzadoRepository.findByNombreContaining(nombre == null ? "" : nombre);
