@@ -17,8 +17,7 @@ public class SecurityConfig {
 
         http.csrf(csrf -> csrf.disable());
 
-        http.authorizeHttpRequests(auth -> auth
-                // 🚀 TODO: permitir TODO swagger sin restricciones
+        http.authorizeHttpRequests(auth -> auth                
                 .requestMatchers(
                         "/swagger-ui/**",
                         "/swagger-ui.html",
@@ -27,8 +26,6 @@ public class SecurityConfig {
                         "/swagger-resources/**",
                         "/webjars/**"
                 ).permitAll()
-
-                // 🚀 Y por ahora, permitir todo lo demás mientras desarrollas
                 .anyRequest().permitAll()
         );
 

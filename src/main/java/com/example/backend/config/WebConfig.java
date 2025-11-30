@@ -15,12 +15,11 @@ public class WebConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins(
-                                // Tus entornos locales
+                                // Entorno local
                                 "http://localhost:5173",
                                 "http://127.0.0.1:5173",
                                 
-                                // Tu entorno de producción (Vercel)
-                                // NOTA: He corregido '.verce.app' a '.vercel.app'
+                                // Entorno vercel
                                 "https://pop-shoes-front-react.vercel.app"
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
