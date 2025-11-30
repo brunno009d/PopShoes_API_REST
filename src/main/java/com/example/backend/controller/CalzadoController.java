@@ -82,6 +82,8 @@ public class CalzadoController {
         return ResponseEntity.noContent().build();
     }
 
+    // personalizado 
+
     @GetMapping("/buscar/nombre")
     public ResponseEntity<List<Calzado>> buscarPorNombre(@RequestParam String nombre) {
         List<Calzado> resultados = calzadoService.buscarPorNombre(nombre);

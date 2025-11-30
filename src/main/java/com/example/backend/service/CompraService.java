@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,5 +83,10 @@ public class CompraService {
             return true;
         }
         return false;
+    }
+
+    public List<Compra> buscarPorUsuarioId(Integer userId) {
+        if (userId == null) return Collections.emptyList();
+        return compraRepository.findByUsuarioId(userId);
     }
 }

@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.backend.model.Calzado;
 import com.example.backend.model.Compra;
 import com.example.backend.service.CompraService;
 
@@ -86,5 +88,12 @@ public class CompraController {
         if (ok)
             return ResponseEntity.noContent().build();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    // Otros:
+    @GetMapping("/usuario/{id}")
+    public ResponseEntity<List<Compra>> buscarPorUsuarioId(@PathVariable Integer id) {
+        List<Compra> resultados = compraService.buscarPorUsuarioId(id);
+        return resultados.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(resultados);
     }
 }
