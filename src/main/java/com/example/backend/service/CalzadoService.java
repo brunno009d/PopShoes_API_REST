@@ -26,6 +26,7 @@ public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
         this.imagenRepository = imagenRepository;
     }
 
+    @Override
     public Calzado crear(Calzado calzado) {
         Calzado calzadoGuardado = calzadoRepository.save(calzado);
 
