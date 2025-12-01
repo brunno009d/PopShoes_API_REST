@@ -26,7 +26,6 @@ public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
         this.imagenRepository = imagenRepository;
     }
 
-    // --- CREAR (POST) ---
     public Calzado crear(Calzado calzado) {
         Calzado calzadoGuardado = calzadoRepository.save(calzado);
 
@@ -40,7 +39,6 @@ public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
         return calzadoGuardado;
     }
 
-    // --- ACTUALIZAR PARCIAL (PATCH) ---
     public Calzado partialUpdate(Calzado calzado) {
         if (calzado == null || calzado.getId() == null) {
             return null;
@@ -150,4 +148,22 @@ public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
         existente.setStock(nuevoStock);
         return calzadoRepository.save(existente);
     }
+
+    @Override
+    public boolean eliminar(Integer id){
+        Calzado calzado = calzadoRepository.findById(id).orElse(null);
+        if (calzado == null) return false;
+
+        if (calzado.getCategorias() != null) calzado.getCategorias().clear();
+        if (calzado.getColores() != null) calzado.getColores().clear();
+        if (calzado.getEstilos() != null) calzado.getEstilos().clear();
+        if (calzado.getTallas() != null) calzado.getTallas().clear();
+
+        calzadoRepository.save(calzado);
+
+        calzadoRepository.delete(calzado);
+        return true;
+    }
+
+    
 }
