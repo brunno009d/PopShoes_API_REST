@@ -55,6 +55,10 @@ public class Usuario {
     @Column(name = "fecha_creacion", nullable = false)
     private Date fechaCreacion;
 
+    //campo de imagen 
+    @Column(name = "imagen_usuario", nullable=true, length=500)
+    private String imagenUsuario;
+
     @ManyToOne
     @JoinColumn(name = "id_rol", nullable = false)
     private Rol rol;
