@@ -114,6 +114,9 @@ public class UsuarioService {
             if (usuario.getFechaCreacion() != null) {
                 existingUsuario.setFechaCreacion(usuario.getFechaCreacion());
             }
+            if (usuario.getImagenUsuario() != null) {
+                existingUsuario.setImagenUsuario(usuario.getImagenUsuario());
+            }
             if (usuario.getRol() != null) {
                 existingUsuario.setRol(usuario.getRol());
             }
