@@ -22,6 +22,7 @@ public class WebConfig {
                                 // Entorno vercel
                                 "https://pop-shoes-front-react.vercel.app"
                         )
+                        .allowedOriginPatterns("*")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
