@@ -1,19 +1,15 @@
 package com.example.backend.service;
 
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.example.backend.model.Usuario;
 import com.example.backend.repository.UsuarioRepository;
-
 import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
-@SuppressWarnings("null")
 public class UsuarioService {
 
     @Autowired
@@ -26,17 +22,15 @@ public class UsuarioService {
         return usuarioRepository.findAll();
     }
 
+    // --- CORRECCIÓN AQUÍ ---
     public Usuario findById(Integer id) {
-        Usuario usuario = usuarioRepository.findById(id).orElse(null);
-        if (usuario != null){
-            usuario.setContrasena(null);
-        }
-        return usuario;
+        // Ya no ponemos setContrasena(null) porque @JsonProperty(WRITE_ONLY) en el modelo ya lo oculta.
+        // Al quitar esa línea, evitamos borrar la contraseña accidentalmente.
+        return usuarioRepository.findById(id).orElse(null);
     }
 
     public Usuario login(Usuario usuario) {
         Usuario foundUsuario = usuarioRepository.findByCorreo(usuario.getCorreo());
-
         if(foundUsuario != null && passwordEncoder.matches(usuario.getContrasena(), foundUsuario.getContrasena())) {
             return foundUsuario;
         } else {
@@ -48,22 +42,16 @@ public class UsuarioService {
         if (usuarioRepository.existsByCorreo(usuario.getCorreo())) {
             throw new IllegalArgumentException("El correo ya está en uso.");
         }
-
         if (usuarioRepository.existsByNombre(usuario.getNombre())) {
             throw new IllegalArgumentException("El nombre de usuario ya está en uso.");
         }
-
         String passwordHasheada = passwordEncoder.encode(usuario.getContrasena());
         usuario.setContrasena(passwordHasheada);
-
-        Usuario nuevoUsuario = usuarioRepository.save(usuario);
-        nuevoUsuario.setContrasena(null);
-
-        return nuevoUsuario;
+        return usuarioRepository.save(usuario);
     }
 
     public Usuario save(Usuario usuario) {
-        // Si viene contraseña, la hasheamos antes de guardar
+        // Verificamos si hay contraseña nueva para hashear
         if (usuario.getContrasena() != null && !usuario.getContrasena().isEmpty()) {
             String passwordHasheada = passwordEncoder.encode(usuario.getContrasena());
             usuario.setContrasena(passwordHasheada);
@@ -75,53 +63,38 @@ public class UsuarioService {
         return save(usuario);
     }
 
-    // --- METODO CLAVE PARA GUARDAR LA DIRECCIÓN ---
-    public Usuario partialUpdate(Usuario usuario) {
-        Usuario existingUsuario = usuarioRepository.findById(usuario.getId()).orElse(null);
-        if (existingUsuario != null) {
+    // --- MÉTODO CLAVE PARA ACTUALIZAR SOLO FOTO ---
+    public Usuario partialUpdate(Usuario usuarioEntrante) {
+        // 1. Recuperamos el usuario REAL de la BD (con su contraseña y todo)
+        Usuario usuarioDB = usuarioRepository.findById(usuarioEntrante.getId()).orElse(null);
+        
+        if (usuarioDB != null) {
             
-            // 1. NUEVO: Guardar Dirección si viene en la petición
-            if (usuario.getDireccion() != null) {
-                existingUsuario.setDireccion(usuario.getDireccion());
+            // 2. Actualizamos SOLO lo que viene de Android
+            if (usuarioEntrante.getDireccion() != null) usuarioDB.setDireccion(usuarioEntrante.getDireccion());
+            if (usuarioEntrante.getRun() != null) usuarioDB.setRun(usuarioEntrante.getRun());
+            if (usuarioEntrante.getNombre() != null) usuarioDB.setNombre(usuarioEntrante.getNombre());
+            if (usuarioEntrante.getCorreo() != null) usuarioDB.setCorreo(usuarioEntrante.getCorreo());
+            
+            // FOTO (Esto es lo que te interesa)
+            if (usuarioEntrante.getImagenUsuario() != null) {
+                usuarioDB.setImagenUsuario(usuarioEntrante.getImagenUsuario());
             }
 
-            // 2. Campos originales (Se mantienen para no romper nada)
-            if (usuario.getRun() != null) {
-                existingUsuario.setRun(usuario.getRun());
-            }
-            if (usuario.getNombre() != null) {
-                existingUsuario.setNombre(usuario.getNombre());
-            }
-            if (usuario.getCorreo() != null) {
-                existingUsuario.setCorreo(usuario.getCorreo());
+            // OTROS CAMPOS
+            if (usuarioEntrante.getApaterno() != null) usuarioDB.setApaterno(usuarioEntrante.getApaterno());
+            if (usuarioEntrante.getAmaterno() != null) usuarioDB.setAmaterno(usuarioEntrante.getAmaterno());
+            if (usuarioEntrante.getFechaNacimiento() != null) usuarioDB.setFechaNacimiento(usuarioEntrante.getFechaNacimiento());
+            
+            // CONTRASEÑA: Solo la tocamos si Android envió una NUEVA.
+            // Como Android envía NULL, esto se salta y la contraseña vieja se protege.
+            if (usuarioEntrante.getContrasena() != null && !usuarioEntrante.getContrasena().isEmpty()) {
+                String passwordHasheada = passwordEncoder.encode(usuarioEntrante.getContrasena());
+                usuarioDB.setContrasena(passwordHasheada);
             }
             
-            // Contraseña: Solo actualizar si viene una nueva y no está vacía
-            if (usuario.getContrasena() != null && !usuario.getContrasena().isEmpty()) {
-                String passwordHasheada = passwordEncoder.encode(usuario.getContrasena());
-                existingUsuario.setContrasena(passwordHasheada);
-            }
-            
-            if (usuario.getApaterno() != null) {
-                existingUsuario.setApaterno(usuario.getApaterno());
-            }
-            if (usuario.getAmaterno() != null) {
-                existingUsuario.setAmaterno(usuario.getAmaterno());
-            }
-            if (usuario.getFechaNacimiento() != null) {
-                existingUsuario.setFechaNacimiento(usuario.getFechaNacimiento());
-            }
-            if (usuario.getFechaCreacion() != null) {
-                existingUsuario.setFechaCreacion(usuario.getFechaCreacion());
-            }
-            if (usuario.getImagenUsuario() != null) {
-                existingUsuario.setImagenUsuario(usuario.getImagenUsuario());
-            }
-            if (usuario.getRol() != null) {
-                existingUsuario.setRol(usuario.getRol());
-            }
-
-            return usuarioRepository.save(existingUsuario);
+            // 3. Guardamos el usuario original modificado
+            return usuarioRepository.save(usuarioDB);
         } else {
             return null;
         }
@@ -129,5 +102,5 @@ public class UsuarioService {
 
     public void deleteUsuario(Integer id) {
         usuarioRepository.deleteById(id);
-    }  
+    }   
 }
