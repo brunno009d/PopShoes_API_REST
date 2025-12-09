@@ -81,7 +81,10 @@ public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
 
 
     public List<Calzado> buscarPorNombre(String nombre) {
-        return calzadoRepository.findByNombreContaining(nombre == null ? "" : nombre);
+        if (nombre == null || nombre.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+        return calzadoRepository.buscarPorNombreFuzzy(nombre);
     }
 
     public List<Calzado> buscarPorMarca(Integer marcaId) {
