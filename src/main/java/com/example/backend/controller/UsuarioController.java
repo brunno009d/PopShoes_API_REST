@@ -86,26 +86,18 @@ public class UsuarioController {
     @PatchMapping("/{id}/foto")
     public ResponseEntity<?> actualizarFotoPerfil(@PathVariable Integer id, @RequestBody Map<String, String> body) {
         
-        // 1. Buscamos al usuario por su ID
         Usuario usuario = usuarioService.findById(id); 
         
         if (usuario == null) {
             return ResponseEntity.notFound().build();
         }
 
-        // 2. Extraemos la foto del JSON que envía Android
-        // Se espera un JSON así: { "imagenUsuario": "base64....." }
         if (body.containsKey("imagenUsuario")) {
             String nuevaFoto = body.get("imagenUsuario");
-            
-            // 3. Modificamos SOLO el campo de la imagen
             usuario.setImagenUsuario(nuevaFoto);
-            
-            // 4. Guardamos. Como el objeto 'usuario' ya tiene el nombre/apellido cargados de la base de datos,
-            // no darán error de NULL.
             usuarioService.save(usuario);
             
-            return ResponseEntity.ok(usuario); // Devolvemos el usuario actualizado
+            return ResponseEntity.ok(usuario); 
         } else {
             return ResponseEntity.badRequest().body("Falta el campo 'imagenUsuario'");
         }
