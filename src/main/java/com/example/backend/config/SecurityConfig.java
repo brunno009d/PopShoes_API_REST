@@ -62,19 +62,15 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Origenes permitidos (Local y Producción)
+        // AGREGAR 127.0.0.1 a la lista
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:5173", 
+            "http://127.0.0.1:5173",  // <-- IMPORTANTE: Agrega esto
             "https://pop-shoes-front-react.vercel.app"
         ));
         
-        // Métodos permitidos
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        
-        // Cabeceras permitidas (incluyendo Authorization para el Token)
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Access-Control-Allow-Origin"));
-        
-        // Permitir credenciales (cookies/tokens)
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
