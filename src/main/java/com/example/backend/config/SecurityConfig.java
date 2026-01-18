@@ -1,5 +1,7 @@
 package com.example.backend.config;
 
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -8,6 +10,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,34 +22,57 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
-    private final AuthenticationProvider authenticationProvider; 
+    private final AuthenticationProvider authenticationProvider;
 
     @Bean
-public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    
-    // 1. Desactivar CSRF (Correcto para APIs)
-    http.csrf(csrf -> csrf.disable());
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        
+        http
+            .csrf(csrf -> csrf.disable())
+            // 1. Aquí activamos CORS usando la configuración que definimos abajo
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) 
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/auth/**",
+                    "/api/usuarios",           // Registro
+                    "/api/usuarios/login",     // Login
+                    "/api/calzados/**",        // <-- IMPORTANTE: Catálogo público
+                    "/api/imagenes/**",        // Imágenes públicas
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
+                    "/swagger-resources/**"
+                ).permitAll()
+                .anyRequest().authenticated()
+            )
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authenticationProvider(authenticationProvider)
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-    // 2. IMPORTANTE: Integrar la configuración de CORS de WebConfig aquí
-    http.cors(org.springframework.security.config.Customizer.withDefaults()); 
+        return http.build();
+    }
 
-    http.authorizeHttpRequests(auth -> auth
-            .requestMatchers(
-                "/auth/**",           
-                "/api/usuarios", 
-                "/api/usuarios/login",     
-                "/api/calzados/**",   
-                "/swagger-ui/**",     
-                "/v3/api-docs/**",
-                "/swagger-resources/**"
-            ).permitAll()
-            .anyRequest().authenticated() 
-    );
+    // 2. Definición del Bean de CORS (Reemplaza lo que tenías en WebConfig)
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        
+        // Origenes permitidos (Local y Producción)
+        configuration.setAllowedOrigins(Arrays.asList(
+            "http://localhost:5173", 
+            "https://pop-shoes-front-react.vercel.app"
+        ));
+        
+        // Métodos permitidos
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        
+        // Cabeceras permitidas (incluyendo Authorization para el Token)
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Access-Control-Allow-Origin"));
+        
+        // Permitir credenciales (cookies/tokens)
+        configuration.setAllowCredentials(true);
 
-    http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-    http.authenticationProvider(authenticationProvider);
-    http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-
-    return http.build();
-}
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }
