@@ -20,30 +20,30 @@ public class SecurityConfig {
     private final AuthenticationProvider authenticationProvider; 
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        
-        // 1. Desactivar CSRF (Correcto para APIs)
-        http.csrf(csrf -> csrf.disable());
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     
-        // 2. IMPORTANTE: Integrar la configuración de CORS de WebConfig aquí
-        http.cors(org.springframework.security.config.Customizer.withDefaults()); 
-    
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/auth/**",           // Login
-                    "/api/usuarios",      // <--- AGREGA ESTO: Permite el registro público
-                    "/api/calzados/**",   // (Opcional) Si quieres que ver productos sea público
-                    "/swagger-ui/**",     
-                    "/v3/api-docs/**",
-                    "/swagger-resources/**"
-                ).permitAll()
-                .anyRequest().authenticated() // El resto sigue privado
-        );
-    
-        http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        http.authenticationProvider(authenticationProvider);
-        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-    
-        return http.build();
-    }
+    // 1. Desactivar CSRF (Correcto para APIs)
+    http.csrf(csrf -> csrf.disable());
+
+    // 2. IMPORTANTE: Integrar la configuración de CORS de WebConfig aquí
+    http.cors(org.springframework.security.config.Customizer.withDefaults()); 
+
+    http.authorizeHttpRequests(auth -> auth
+            .requestMatchers(
+                "/auth/**",           
+                "/api/usuarios",      
+                "/api/calzados/**",   
+                "/swagger-ui/**",     
+                "/v3/api-docs/**",
+                "/swagger-resources/**"
+            ).permitAll()
+            .anyRequest().authenticated() 
+    );
+
+    http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+    http.authenticationProvider(authenticationProvider);
+    http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+    return http.build();
+}
 }
