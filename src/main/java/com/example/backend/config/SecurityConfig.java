@@ -34,10 +34,16 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/auth/**",
-                    "/api/usuarios",           // Registro
-                    "/api/usuarios/login",     // Login
-                    "/api/calzados/**",        // <-- IMPORTANTE: Catálogo público
-                    "/api/imagenes/**",        // Imágenes públicas
+                    "/api/usuarios",
+                    "/api/usuarios/login",
+                    "/api/calzados/**",        
+                    "/api/imagenes/**",                            
+                    "/api/tallas/**",
+                    "/api/colores/**",
+                    "/api/marcas/**",
+                    "/api/generos/**",
+                    "/api/categorias/**",
+                    "/api/estilos/**",                                
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
                     "/swagger-resources/**"
