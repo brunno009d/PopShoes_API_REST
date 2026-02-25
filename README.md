@@ -35,3 +35,6 @@ PopShoes es una API REST escalable diseñada para la gestión integral de un e-c
 2. Construir la imagen:
    ```bash
    docker build -t popshoes-backend .
+3. Ejecutar el contenedor:
+   ```bash
+   docker run -p 8080:8080 popshoes-backend
