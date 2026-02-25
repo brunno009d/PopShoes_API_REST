@@ -5,7 +5,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4D4D4D?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
-PopShoes es una API REST escalable diseñada para la gestión integral de un e-commerce de calzado. Implementa una arquitectura multicapa (Controller-Service-Repository) y un sistema de seguridad basado en estándares de la industria.
+PopShoes es una API REST escalable diseñada para la gestión integral de un e-commerce de calzado. Implementa una arquitectura en capas (Controller-Service-Repository) y un sistema de seguridad basado en estándares de la industria.
 
 ## 🚀 Funcionalidades Principales
 
