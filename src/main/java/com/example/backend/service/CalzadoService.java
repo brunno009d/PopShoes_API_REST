@@ -7,8 +7,10 @@ import org.springframework.stereotype.Service;
 
 import com.example.backend.core.AbstractBaseService;
 import com.example.backend.model.Calzado;
+import com.example.backend.model.DetalleCompra;
 import com.example.backend.model.Imagen; 
 import com.example.backend.repository.CalzadoRepository;
+import com.example.backend.repository.DetalleCompraRepository;
 import com.example.backend.repository.ImagenRepository; 
 
 import jakarta.transaction.Transactional;
@@ -19,11 +21,13 @@ public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
 
     private final CalzadoRepository calzadoRepository;
     private final ImagenRepository imagenRepository;
+    private final DetalleCompraRepository detalleCompraRepository;
 
-    public CalzadoService(CalzadoRepository calzadoRepository, ImagenRepository imagenRepository) {
+    public CalzadoService(CalzadoRepository calzadoRepository, ImagenRepository imagenRepository, DetalleCompraRepository detalleCompraRepository) {
         super(calzadoRepository);
         this.calzadoRepository = calzadoRepository;
         this.imagenRepository = imagenRepository;
+        this.detalleCompraRepository = detalleCompraRepository;
     }
 
     @Override
@@ -158,6 +162,13 @@ public class CalzadoService extends AbstractBaseService<Calzado, Integer> {
         Calzado calzado = calzadoRepository.findById(id).orElse(null);
         if (calzado == null) return false;
 
+        // Eliminar detalles de compra asociados (cascada)
+        List<DetalleCompra> detallesCompra = detalleCompraRepository.findByCalzadoId(id);
+        if (detallesCompra != null && !detallesCompra.isEmpty()) {
+            detalleCompraRepository.deleteAll(detallesCompra);
+        }
+
+        // Limpiar asociaciones many-to-many
         if (calzado.getCategorias() != null) calzado.getCategorias().clear();
         if (calzado.getColores() != null) calzado.getColores().clear();
         if (calzado.getEstilos() != null) calzado.getEstilos().clear();
