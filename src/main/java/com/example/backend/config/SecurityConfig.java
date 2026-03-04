@@ -65,12 +65,14 @@ public class SecurityConfig {
         // AGREGAR 127.0.0.1 a la lista
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:5173", 
-            "http://127.0.0.1:5173",  // <-- IMPORTANTE: Agrega esto
+            "http://127.0.0.1:5173",  
             "https://pop-shoes-front-react.vercel.app"
         ));
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Access-Control-Allow-Origin"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));  // Permitir todos los headers
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+        configuration.setMaxAge(3600L);  // Cache preflight por 1 hora
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
